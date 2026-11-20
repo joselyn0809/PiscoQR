@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parcelas | PISCO ORIGEN QR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <i class="bi bi-qr-code-scan"></i>
+                <div>
+                    <div class="font-marca fw-bold text-white lh-1">PISCO ORIGEN</div>
+                    <small style="color: var(--color-dorado); font-size: 0.72rem;">TRAZABILIDAD QR</small>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="../dashboard.html" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <a href="productores.html" class="sidebar-link"><i class="bi bi-people"></i> Productores</a>
+                <a href="parcelas.html" class="sidebar-link active"><i class="bi bi-geo-alt"></i> Parcelas</a>
+                <a href="variedades.html" class="sidebar-link"><i class="bi bi-flower1"></i> Variedades de uva</a>
+                <a href="cosechas.html" class="sidebar-link"><i class="bi bi-basket"></i> Cosechas</a>
+                <a href="lotes.html" class="sidebar-link"><i class="bi bi-boxes"></i> Lotes</a>
+                <a href="procesos.html" class="sidebar-link"><i class="bi bi-gear-wide-connected"></i> Procesos</a>
+                <a href="productos.html" class="sidebar-link"><i class="bi bi-cup-straw"></i> Productos</a>
+                <a href="codigos_qr.html" class="sidebar-link"><i class="bi bi-qr-code"></i> Códigos QR</a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" id="btnLogout" class="sidebar-link text-warning">
+                    <i class="bi bi-box-arrow-left"></i> Cerrar sesión
+                </a>
+            </div>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <div class="main-content">
+            <header class="topbar">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-outline-secondary d-lg-none" id="btnToggleSidebar">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <h2 class="h5 mb-0 fw-bold" style="color: var(--color-borgona);">
+                        <i class="bi bi-geo-alt-fill me-2" style="color: var(--color-dorado);"></i>Gestión de Parcelas Vitivinícolas
+                    </h2>
+                </div>
+                <span class="badge rounded-pill px-3 py-2" style="background-color: var(--color-crema); color: var(--color-borgona); border: 1px solid var(--color-dorado);">
+                    <i class="bi bi-person-check-fill me-1"></i>
+                    <span id="userEmailDisplay">Cargando...</span>
+                </span>
+            </header>
+
+            <main class="p-4">
+                <div class="card-pisco p-4">
+                    <!-- Barra superior: Búsqueda y Botón Nuevo -->
+                    <div class="row g-3 align-items-center justify-content-between mb-4">
+                        <div class="col-12 col-md-6 col-lg-5">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                                <input type="text" id="inputBuscar" class="form-control" placeholder="Buscar por parcela, ubicación o productor...">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-auto text-end">
+                            <button class="btn btn-borgona px-4" id="btnNuevaParcela">
+                                <i class="bi bi-plus-circle me-2"></i>Nueva Parcela
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Parcelas -->
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead style="background-color: var(--color-crema); color: var(--color-borgona);">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre de Parcela</th>
+                                    <th>Productor Asociado</th>
+                                    <th>Ubicación</th>
+                                    <th>Área (ha)</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaParcelasBody">
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        <span class="spinner-border spinner-border-sm me-2"></span>Cargando parcelas...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Crear / Editar Parcela -->
+    <div class="modal fade" id="modalParcela" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header text-white" style="background-color: var(--color-borgona);">
+                    <h5 class="modal-title font-marca" id="modalParcelaTitulo">Nueva Parcela</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formParcela">
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="idParcela">
+                        <div class="mb-3">
+                            <label for="selectProductor" class="form-label">Productor Propietario *</label>
+                            <select class="form-select" id="selectProductor" required>
+                                <option value="">Seleccione un productor...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nombreParcela" class="form-label">Nombre de la Parcela / Fundo *</label>
+                            <input type="text" class="form-control" id="nombreParcela" maxlength="100" placeholder="Ej. Fundo San Juan de Pacarán" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="ubicacionParcela" class="form-label">Ubicación Geográfica *</label>
+                            <input type="text" class="form-control" id="ubicacionParcela" maxlength="180" placeholder="Ej. Valle de Cañete, Lima, Perú" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="areaHectareas" class="form-label">Área Cultivable (Hectáreas) *</label>
+                            <input type="number" step="0.01" min="0.01" class="form-control" id="areaHectareas" placeholder="Ej. 10.50" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-borgona" id="btnGuardarParcela">
+                            <i class="bi bi-save me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmar Eliminación -->
+    <div class="modal fade" id="modalEliminar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h6 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Confirmar Eliminación</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <p class="mb-1">¿Deseas eliminar la parcela?</p>
+                    <strong id="nombreEliminar" class="text-danger"></strong>
+                </div>
+                <div class="modal-footer justify-content-center bg-light">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-sm btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/parcelas.js"></script>
+</body>
+</html>

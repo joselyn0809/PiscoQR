@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificado de Trazabilidad | PISCO ORIGEN QR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .hero-trazabilidad {
+            background: linear-gradient(135deg, var(--color-borgona) 0%, var(--color-vino) 100%);
+            color: var(--color-blanco);
+            border-bottom: 4px solid var(--color-dorado);
+        }
+        .sello-autenticidad {
+            background-color: rgba(200, 164, 93, 0.18);
+            border: 1px solid var(--color-dorado);
+            color: var(--color-dorado);
+        }
+        .timeline-proceso {
+            position: relative;
+            padding-left: 1.75rem;
+            border-left: 2px solid var(--color-dorado);
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.25rem;
+        }
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -2.15rem;
+            top: 0.3rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--color-borgona);
+            border: 2px solid var(--color-dorado);
+        }
+    </style>
+</head>
+<body>
+    <!-- Encabezado Público -->
+    <header class="hero-trazabilidad py-4 px-3">
+        <div class="container" style="max-width: 920px;">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-qr-code-scan fs-1" style="color: var(--color-dorado);"></i>
+                    <div>
+                        <h1 class="h4 font-marca fw-bold mb-0">PISCO ORIGEN QR</h1>
+                        <small style="color: var(--color-dorado);">Sistema Oficial de Trazabilidad Vitivinícola del Perú</small>
+                    </div>
+                </div>
+                <a href="index.html" class="btn btn-sm btn-outline-light">
+                    <i class="bi bi-shield-lock me-1"></i>Acceso Productor
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container py-4" style="max-width: 920px;">
+        <!-- Buscador manual de código QR (útil en la exposición en vivo) -->
+        <div class="card-pisco p-3 mb-4">
+            <form id="formBuscarCodigo" class="row g-2 align-items-center">
+                <div class="col-12 col-sm">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-qr-code text-muted"></i></span>
+                        <input type="text" id="inputCodigoManual" class="form-control text-uppercase" placeholder="Ingresa o escanea un código QR (Ej. PSC-2026-001)" required>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-auto">
+                    <button type="submit" class="btn btn-borgona w-100 px-4">
+                        <i class="bi bi-search me-1"></i>Verificar Origen
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Estado de Carga -->
+        <div id="estadoCarga" class="text-center py-5 d-none">
+            <div class="spinner-border" style="color: var(--color-borgona);" role="status"></div>
+            <p class="mt-2 text-muted fw-semibold">Consultando cadena de trazabilidad en tiempo real...</p>
+        </div>
+
+        <!-- Estado Error / No encontrado -->
+        <div id="estadoError" class="card-pisco p-5 text-center d-none">
+            <i class="bi bi-exclamation-octagon text-danger display-4"></i>
+            <h3 class="h5 fw-bold mt-3 text-danger">Código QR no encontrado</h3>
+            <p class="text-muted mb-0" id="mensajeErrorTexto">El código consultado no existe en nuestros registros oficiales.</p>
+        </div>
+
+        <!-- Ficha Completa de Trazabilidad -->
+        <div id="contenedorFicha" class="d-none">
+            <!-- Tarjeta Principal del Producto -->
+            <div class="card-pisco p-4 mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 border-bottom pb-3 mb-3">
+                    <div>
+                        <span class="badge sello-autenticidad rounded-pill px-3 py-2 mb-2">
+                            <i class="bi bi-patch-check-fill me-1"></i>ORIGEN VERIFICADO • DENOMINACIÓN PISCO
+                        </span>
+                        <h2 class="h3 font-marca fw-bold mb-1" style="color: var(--color-borgona);" id="fichaProductoNombre"></h2>
+                        <p class="text-muted mb-0" id="fichaProductoDetalle"></p>
+                    </div>
+                    <div class="text-sm-end">
+                        <div class="small text-muted">Código de Trazabilidad</div>
+                        <div class="fs-5 fw-bold px-3 py-1 rounded" style="background-color: var(--color-borgona); color: var(--color-dorado);" id="fichaCodigoQr"></div>
+                        <small class="text-muted d-block mt-1" id="fichaFechaQr"></small>
+                    </div>
+                </div>
+
+                <!-- 4 Indicadores Clave -->
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 rounded" style="background-color: var(--color-crema);">
+                            <small class="text-muted d-block">Variedad de Uva</small>
+                            <strong style="color: var(--color-borgona);" id="fichaVariedad"></strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 rounded" style="background-color: var(--color-crema);">
+                            <small class="text-muted d-block">Lote de Producción</small>
+                            <strong style="color: var(--color-borgona);" id="fichaLote"></strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 rounded" style="background-color: var(--color-crema);">
+                            <small class="text-muted d-block">Fecha de Vendimia</small>
+                            <strong style="color: var(--color-borgona);" id="fichaFechaCosecha"></strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 rounded" style="background-color: var(--color-crema);">
+                            <small class="text-muted d-block">Volumen del Lote</small>
+                            <strong style="color: var(--color-borgona);" id="fichaKilosLote"></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Origen Agrícola: Productor, Parcela y Uva -->
+            <div class="row g-4 mb-4">
+                <div class="col-12 col-md-6">
+                    <div class="card-pisco p-4 h-100">
+                        <h3 class="h6 fw-bold text-uppercase mb-3" style="color: var(--color-borgona);">
+                            <i class="bi bi-building me-2" style="color: var(--color-dorado);"></i>Bodega / Productor Autorizado
+                        </h3>
+                        <p class="fw-bold mb-1 fs-5" id="fichaProductorNombre"></p>
+                        <p class="text-muted small mb-2" id="fichaProductorDoc"></p>
+                        <hr>
+                        <h4 class="h6 fw-bold text-uppercase mb-2" style="color: var(--color-borgona);">
+                            <i class="bi bi-geo-alt-fill me-2" style="color: var(--color-dorado);"></i>Viñedo / Parcela de Origen
+                        </h4>
+                        <p class="fw-semibold mb-1" id="fichaParcelaNombre"></p>
+                        <p class="text-muted small mb-1" id="fichaParcelaUbicacion"></p>
+                        <span class="badge bg-light text-dark border" id="fichaParcelaArea"></span>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="card-pisco p-4 h-100">
+                        <h3 class="h6 fw-bold text-uppercase mb-3" style="color: var(--color-borgona);">
+                            <i class="bi bi-flower1 me-2" style="color: var(--color-dorado);"></i>Perfil de la Uva Pisquera
+                        </h3>
+                        <p class="fw-bold mb-2 fs-5" style="color: var(--color-vino);" id="fichaVariedadTitulo"></p>
+                        <p class="text-muted small mb-3" id="fichaVariedadDesc"></p>
+                        <div class="p-3 rounded border" style="background-color: var(--color-crema);">
+                            <small class="text-muted d-block">Cosecha Total Registrada en Parcela</small>
+                            <strong style="color: var(--color-borgona);" id="fichaCosechaTotal"></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Línea de Tiempo de Procesos de Elaboración -->
+            <div class="card-pisco p-4">
+                <h3 class="h6 fw-bold text-uppercase mb-4" style="color: var(--color-borgona);">
+                    <i class="bi bi-gear-wide-connected me-2" style="color: var(--color-dorado);"></i>Bitácora de Procesos y Destilación del Lote
+                </h3>
+                <div class="timeline-proceso" id="fichaTimelineProcesos"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-4 text-muted small">
+        PISCO ORIGEN QR &copy; 2026 — Plataforma de Trazabilidad Agroindustrial
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/consulta.js"></script>
+</body>
+</html>
